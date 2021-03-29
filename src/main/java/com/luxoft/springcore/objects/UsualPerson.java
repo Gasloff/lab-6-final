@@ -1,6 +1,15 @@
 package com.luxoft.springcore.objects;
 
-public class UsualPerson implements Person {
+import com.luxoft.springcore.events.TravelEvent;
+import com.luxoft.springcore.travel.TravellingOpportunities;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
+
+@Component("person")
+public class UsualPerson implements Person, ApplicationContextAware {
     private int id;
 
     private String name;
@@ -9,11 +18,30 @@ public class UsualPerson implements Person {
     
 	private int age;
 	private boolean isProgrammer;
-    
+
+	@Autowired
+    private TravellingOpportunities travellingOpportunities;
+	private ApplicationContext applicationContext;
+
+    public UsualPerson() {
+    }
+
     public UsualPerson(String name, int age, City city) {
+        this.name = name;
+        this.age = age;
+        this.city = city;
+    }
+    
+    public UsualPerson(int id, String name, int age, City city) {
+        this.id = id;
     	this.name = name;
     	this.age = age;
     	this.city = city;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 
     public int getAge() {
@@ -67,7 +95,8 @@ public class UsualPerson implements Person {
     
     
     public void travel(City source, City destination) {
-    	
+    	distanceTravelled += travellingOpportunities.getDistance(source, destination);
+    	applicationContext.publishEvent(new TravelEvent(this, destination));
     }
 
     public String toString() {
